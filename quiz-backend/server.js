@@ -167,3 +167,5 @@ app.post('/api/check-answer', (req, res) => {
 app.listen(port, () => {
     console.log(`Synapse server is running at http://localhost:${port}`);
 });
+
+module.exports = app;
