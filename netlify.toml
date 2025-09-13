@@ -1,0 +1,15 @@
+# This is the main configuration file for Netlify.
+
+# Build settings
+[build]
+  # The folder containing your serverless functions
+  functions = "quiz-backend/"
+  # The folder to publish for your static site
+  publish = "."
+
+# Redirects and rewrites rules
+[[redirects]]
+  # This rule makes your API available at /api/
+  from = "/api/*"
+  to = "/.netlify/functions/server/:splat"
+  status = 200
