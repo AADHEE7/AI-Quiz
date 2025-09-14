@@ -10,68 +10,72 @@
     <style>
         /* --- Base & Variables --- */
         :root {
-            --primary-color: #8e2de2;
-            --secondary-color: #4a00e0;
-            --background-color: #f0f2f5;
-            --card-background: #ffffff;
-            --text-color: #333;
+            --primary-color: #8A2BE2; /* BlueViolet */
+            --secondary-color: #4B0082; /* Indigo */
+            --card-bg-color: rgba(255, 255, 255, 0.15);
+            --text-color: #2c3e50;
             --light-text-color: #555;
-            --correct-color: #28a745;
-            --incorrect-color: #dc3545;
-            --timer-color: #ffc107;
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --correct-color: #2ecc71;
+            --incorrect-color: #e74c3c;
+            --timer-color: #f1c40f;
+            --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
             --border-radius: 20px;
         }
 
         /* --- Animations --- */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+        @keyframes background-pan {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-30px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
         }
-        @keyframes slideInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-5px); }
-            40%, 80% { transform: translateX(5px); }
-        }
-        @keyframes tada {
-            from { transform: scale3d(1, 1, 1); }
-            10%, 20% { transform: scale3d(.9, .9, .9) rotate3d(0, 0, 1, -3deg); }
-            30%, 50%, 70%, 90% { transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, 3deg); }
-            40%, 60%, 80% { transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, -3deg); }
-            to { transform: scale3d(1, 1, 1); }
+        @keyframes flip-reveal {
+             from { transform: perspective(800px) rotateY(180deg); }
+             to { transform: perspective(800px) rotateY(0deg); }
         }
 
         /* --- General Styles --- */
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: background-pan 15s ease infinite;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             padding: 20px;
+            overflow: hidden; /* Hide overflowing shapes */
         }
+        
+        /* Background Shapes */
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 10s ease-in-out infinite;
+        }
+        .shape1 { width: 200px; height: 200px; top: 10%; left: 10%; animation-duration: 12s; }
+        .shape2 { width: 150px; height: 150px; bottom: 15%; right: 5%; animation-duration: 8s; }
+        .shape3 { width: 100px; height: 100px; top: 20%; right: 20%; animation-duration: 15s; }
+
 
         /* --- Main Containers (Quiz & Results) --- */
         .quiz-container, .results-container {
-            background: var(--card-background);
+            background: var(--card-bg-color);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             width: 100%;
             max-width: 700px;
             border-radius: var(--border-radius);
@@ -81,80 +85,63 @@
             animation: slideDown 0.6s ease-out;
             transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
             position: relative;
+            z-index: 1;
         }
-        .quiz-container.loading-next {
-            opacity: 0.5;
-        }
-
-        /* Hide class */
-        .hidden {
-            opacity: 0;
-            pointer-events: none;
-            transform: scale(0.95);
-            position: absolute; /* Take out of flow */
-        }
+        .quiz-container.loading-next { opacity: 0.5; }
+        .hidden { opacity: 0; pointer-events: none; transform: scale(0.95); position: absolute; }
         
-        /* --- Timer Styles --- */
-        .timer {
+        /* --- Timer & Difficulty --- */
+        .top-info {
             position: absolute;
-            top: -35px;
+            top: -40px;
             right: 25px;
-            width: 70px;
-            height: 70px;
-            background-color: var(--card-background);
+            left: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .difficulty-indicator {
+            background: var(--card-bg-color);
+            border-radius: 50px;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .timer {
+            width: 80px;
+            height: 80px;
+            background: var(--card-bg-color);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 50%;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
         .timer-inner {
-            width: 60px;
-            height: 60px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
             display: grid;
             place-items: center;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: 700;
-            color: var(--secondary-color);
-            background: conic-gradient(var(--timer-color) 360deg, #ededed 0deg);
+            color: #fff;
+            background: conic-gradient(var(--timer-color) 360deg, transparent 0deg);
             transition: background 1s linear;
         }
-        .timer-inner.low-time {
-            color: var(--incorrect-color);
-            animation: pulse 1s infinite;
-        }
+        .timer-inner.low-time { color: var(--incorrect-color); animation: pulse 1s infinite; }
         
         /* --- Header: Title, Score, Progress --- */
-        .quiz-header {
-            margin-bottom: 30px;
-            animation: fadeIn 0.5s 0.2s backwards;
-        }
-        .quiz-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--light-text-color);
-            margin: 0 0 5px 0;
-        }
-        #score {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-        .progress-bar-container {
-            background-color: #e9ecef;
-            border-radius: 10px;
-            height: 10px;
-            margin-top: 15px;
-            overflow: hidden;
-        }
-        #progress-bar {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-            border-radius: 10px;
-            transition: width 0.4s ease-in-out;
-        }
+        .quiz-header { margin-bottom: 30px; animation: fadeIn 0.5s 0.2s backwards; }
+        .quiz-title { font-size: 1.4rem; font-weight: 700; color: #fff; margin: 0 0 5px 0; text-shadow: 0 2px 4px rgba(0,0,0,0.2);}
+        #score { font-size: 1.5rem; font-weight: 600; color: #f0f0f0; }
+        .progress-bar-container { background-color: rgba(0,0,0,0.2); border-radius: 10px; height: 10px; margin-top: 15px; overflow: hidden; }
+        #progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #f1c40f, #2ecc71); border-radius: 10px; transition: width 0.4s ease-in-out; }
         
         /* --- Question & Options --- */
         #question-text {
@@ -166,17 +153,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            animation: fadeIn 0.5s 0.4s backwards;
         }
-        .answer-options {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
+        .answer-options { display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 30px; }
         .option {
-            background-color: #f8f9fa;
-            border: 2px solid #e0e0e0;
+            background-color: rgba(255,255,255,0.7);
+            border: 2px solid transparent;
             padding: 15px 20px;
             border-radius: 12px;
             cursor: pointer;
@@ -189,119 +170,56 @@
             opacity: 0;
             animation: slideInUp 0.5s forwards;
         }
-        .option:hover {
-            border-color: var(--primary-color);
-            transform: translateY(-2px);
-        }
-        .option.selected {
-            border-color: var(--secondary-color);
-            background-color: #e4d3ff;
-        }
+        .option:hover { border-color: var(--primary-color); transform: translateY(-3px) scale(1.02); }
+        .option.selected { border-color: var(--secondary-color); background-color: #e4d3ff; }
 
         /* --- Feedback Styles & Icons --- */
-        .option.correct, .option.incorrect {
-            color: white;
-            pointer-events: none;
-        }
-        .option.correct { 
-            background-color: var(--correct-color); 
-            border-color: var(--correct-color); 
-            animation: tada 0.8s;
-        }
-        .option.incorrect { 
-            background-color: var(--incorrect-color); 
-            border-color: var(--incorrect-color);
-            animation: shake 0.5s;
-        }
-        .result-icon {
-            margin-left: auto;
-            font-size: 1.5rem;
-            display: none;
-            font-weight: bold;
-        }
+        .option.revealed { pointer-events: none; color: white; animation: flip-reveal 0.6s ease-in-out; }
+        .option.correct { background-color: var(--correct-color); border-color: var(--correct-color); }
+        .option.incorrect { background-color: var(--incorrect-color); border-color: var(--incorrect-color); }
+        
+        .result-icon { margin-left: auto; font-size: 1.8rem; display: none; font-weight: bold; }
         .option.correct .result-icon::after { content: '✔'; }
         .option.incorrect .result-icon::after { content: '✖'; }
-        
-        .option.correct .result-icon, .option.incorrect .result-icon {
-            display: block;
-            animation: fadeIn 0.3s;
-        }
+        .option.revealed .result-icon { display: block; }
 
         /* --- Submit Button & Feedback Text --- */
         .action-btn {
             background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 1.1rem;
-            cursor: pointer;
-            width: 100%;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            margin-top: 10px;
+            color: white; border: none; padding: 15px 30px; border-radius: 12px;
+            font-weight: 700; font-size: 1.1rem; cursor: pointer; width: 100%;
+            transition: transform 0.2s ease, box-shadow 0.2s ease; margin-top: 10px;
         }
-        .action-btn:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 20px rgba(74, 0, 224, 0.4);
-        }
-        .action-btn:disabled {
-            background: #cccccc;
-            cursor: not-allowed;
-            box-shadow: none;
-            transform: none;
-        }
-        #feedback-text {
-            margin-top: 20px;
-            font-weight: 600;
-            min-height: 24px;
-            font-size: 1.1rem;
-            transition: color 0.3s;
-        }
+        .action-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); }
+        .action-btn:disabled { background: #cccccc; cursor: not-allowed; box-shadow: none; transform: none; }
+        #feedback-text { margin-top: 20px; font-weight: 600; min-height: 24px; font-size: 1.1rem; transition: color 0.3s; }
 
         /* --- Results Screen --- */
-        .results-container h1 {
-            font-size: 2.5rem;
-            color: var(--text-color);
-            background: -webkit-linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        #final-score-text {
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: var(--light-text-color);
-            margin: 20px 0;
-        }
-        #result-message {
-            font-size: 1.2rem;
-            color: var(--text-color);
-            margin-bottom: 30px;
-        }
+        .results-container h1 { font-size: 2.5rem; color: var(--text-color); }
+        #final-score-text { font-size: 1.8rem; font-weight: 600; color: var(--light-text-color); margin: 20px 0; }
+        #result-message { font-size: 1.2rem; color: var(--text-color); margin-bottom: 30px; }
 
         /* --- Media Query for Responsiveness --- */
         @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-            .quiz-container, .results-container {
-                padding: 20px;
-            }
-            #question-text {
-                font-size: 1.3rem;
-                min-height: 80px;
-            }
-            .option {
-                font-size: 1rem;
-                padding: 12px 15px;
-            }
+            body { padding: 10px; }
+            .quiz-container, .results-container { padding: 20px; }
+            #question-text { font-size: 1.3rem; min-height: 80px; }
+            .option { font-size: 1rem; padding: 12px 15px; }
+            .top-info { flex-direction: column; gap: 15px; top: -110px; right: 0; left: 0; align-items: center;}
         }
     </style>
 </head>
 <body>
+    <div class="shape shape1"></div>
+    <div class="shape shape2"></div>
+    <div class="shape shape3"></div>
+
     <div class="quiz-container" id="quiz-container">
-        <div class="timer">
-            <div class="timer-inner" id="timer-display">45</div>
+        <div class="top-info">
+            <div class="difficulty-indicator" id="difficulty-indicator">Difficulty: Medium</div>
+            <div class="timer">
+                <div class="timer-inner" id="timer-display">45</div>
+            </div>
         </div>
 
         <div class="quiz-header">
@@ -326,9 +244,9 @@
     </div>
 
     <script>
-        const API_URL = 'http://localhost:3000'; // Ensure your local server is running
+        const API_URL = 'http://localhost:3000';
         const TOTAL_QUESTIONS = 10;
-        const TIME_PER_QUESTION = 45; // Seconds per question
+        const TIME_PER_QUESTION = 45;
 
         let currentQuestion = {};
         let selectedOption = null;
@@ -348,20 +266,16 @@
         const progressBar = document.getElementById('progress-bar');
         const timerDisplay = document.getElementById('timer-display');
         const restartBtn = document.getElementById('restart-btn');
+        const difficultyIndicator = document.getElementById('difficulty-indicator');
 
         function startTimer() {
             resetTimer();
             timerInterval = setInterval(() => {
                 timeLeft--;
                 timerDisplay.textContent = timeLeft;
-                
                 const degrees = ((TIME_PER_QUESTION - timeLeft) / TIME_PER_QUESTION) * 360;
-                timerDisplay.style.background = `conic-gradient(var(--timer-color) ${degrees}deg, #ededed 0deg)`;
-
-                if (timeLeft <= 10) {
-                    timerDisplay.classList.add('low-time');
-                }
-
+                timerDisplay.style.background = `conic-gradient(var(--timer-color) ${degrees}deg, transparent 0deg)`;
+                if (timeLeft <= 10) timerDisplay.classList.add('low-time');
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
                     handleTimeout();
@@ -373,23 +287,14 @@
             clearInterval(timerInterval);
             timeLeft = TIME_PER_QUESTION;
             timerDisplay.textContent = timeLeft;
-            timerDisplay.style.background = `conic-gradient(var(--timer-color) 0deg, #ededed 0deg)`;
+            timerDisplay.style.background = `conic-gradient(var(--timer-color) 0deg, transparent 0deg)`;
             timerDisplay.classList.remove('low-time');
         }
 
         function handleTimeout() {
             feedbackTextEl.textContent = `Time's up! The correct answer was: ${currentQuestion.answer}`;
             feedbackTextEl.style.color = 'var(--incorrect-color)';
-            
-            const allOptions = answerOptionsEl.querySelectorAll('.option');
-            allOptions.forEach(opt => {
-                opt.style.pointerEvents = 'none';
-                if (opt.querySelector('.option-text').textContent === currentQuestion.answer) {
-                    opt.classList.add('correct');
-                }
-            });
-
-            submitBtn.disabled = true;
+            revealAnswers(false);
             moveToNext();
         }
 
@@ -402,13 +307,10 @@
                 feedbackTextEl.textContent = '';
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Submit';
-
-                await new Promise(res => setTimeout(res, 400)); // Short delay for transition
-
+                await new Promise(res => setTimeout(res, 400));
                 const response = await fetch(`${API_URL}/api/get-question`);
                 if (!response.ok) throw new Error(`Network response was not ok. Status: ${response.status}`);
                 currentQuestion = await response.json();
-                
                 questionCount++;
                 displayQuestion();
             } catch (error) {
@@ -421,23 +323,19 @@
 
         function displayQuestion() {
             updateProgress();
-            questionTextEl.textContent = currentQuestion.question;
+            questionTextEl.innerHTML = currentQuestion.question; // Use innerHTML to render potential math notations
+            difficultyIndicator.textContent = `Difficulty: ${currentQuestion.difficulty || 'Medium'}`;
 
             currentQuestion.options.forEach((optionText, index) => {
                 const optionButton = document.createElement('button');
                 optionButton.className = 'option';
                 optionButton.style.animationDelay = `${index * 0.1}s`;
-
                 const textSpan = document.createElement('span');
                 textSpan.className = 'option-text';
-                textSpan.textContent = optionText;
-                
+                textSpan.innerHTML = optionText;
                 const iconDiv = document.createElement('div');
                 iconDiv.className = 'result-icon';
-
-                optionButton.appendChild(textSpan);
-                optionButton.appendChild(iconDiv);
-
+                optionButton.append(textSpan, iconDiv);
                 optionButton.addEventListener('click', () => {
                     document.querySelectorAll('.option.selected').forEach(btn => btn.classList.remove('selected'));
                     optionButton.classList.add('selected');
@@ -451,43 +349,39 @@
         
         function checkAnswer() {
             clearInterval(timerInterval);
-            submitBtn.disabled = true;
-            const allOptions = answerOptionsEl.querySelectorAll('.option');
             const selectedText = selectedOption.querySelector('.option-text').textContent;
             const wasCorrect = (selectedText === currentQuestion.answer);
 
-            allOptions.forEach(opt => {
-                opt.style.pointerEvents = 'none';
-            });
-
             if (wasCorrect) {
                 score++;
-                selectedOption.classList.add('correct');
                 feedbackTextEl.textContent = "Correct! ✨";
                 feedbackTextEl.style.color = 'var(--correct-color)';
             } else {
-                selectedOption.classList.add('incorrect');
                 feedbackTextEl.textContent = `Nice try! The correct answer was: ${currentQuestion.answer}`;
                 feedbackTextEl.style.color = 'var(--incorrect-color)';
-                
-                allOptions.forEach(opt => {
-                    if (opt.querySelector('.option-text').textContent === currentQuestion.answer) {
-                        opt.classList.add('correct');
-                    }
-                });
             }
-
             updateScore();
-            submitBtn.textContent = "Next Question";
-            
-            // Send result to backend
+            revealAnswers(wasCorrect);
             fetch(`${API_URL}/api/check-answer`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ wasCorrect })
-            }).catch(error => console.error("Could not send answer status to backend:", error));
-
+            }).catch(err => console.error("Could not send answer status:", err));
             moveToNext();
+        }
+
+        function revealAnswers(wasCorrect) {
+            submitBtn.disabled = true;
+            const allOptions = answerOptionsEl.querySelectorAll('.option');
+            allOptions.forEach(opt => {
+                opt.classList.add('revealed');
+                const optionText = opt.querySelector('.option-text').textContent;
+                if (optionText === currentQuestion.answer) {
+                    opt.classList.add('correct');
+                } else if (opt.classList.contains('selected')) {
+                    opt.classList.add('incorrect');
+                }
+            });
         }
         
         function moveToNext() {
@@ -497,17 +391,15 @@
                 } else {
                     getNewQuestion();
                 }
-            }, 2500); // Wait 2.5 seconds before next action
+            }, 2500);
         }
         
         function showResults() {
             quizContainer.classList.add('hidden');
             resultsContainer.classList.remove('hidden');
-            
             const finalScoreEl = document.getElementById('final-score-text');
             const resultMessageEl = document.getElementById('result-message');
             finalScoreEl.textContent = `Your final score is: ${score} / ${TOTAL_QUESTIONS}`;
-
             const percentage = (score / TOTAL_QUESTIONS) * 100;
             if (percentage >= 80) {
                 resultMessageEl.textContent = "Excellent work! You're an AI whiz! 🧠";
@@ -523,10 +415,8 @@
             questionCount = 0;
             selectedOption = null;
             updateScore();
-            
             resultsContainer.classList.add('hidden');
             quizContainer.classList.remove('hidden');
-            
             getNewQuestion();
         }
 
@@ -541,8 +431,6 @@
 
         submitBtn.addEventListener('click', checkAnswer);
         restartBtn.addEventListener('click', restartQuiz);
-
-        // Start the quiz!
         getNewQuestion();
     </script>
 </body>
