@@ -1,15 +1,20 @@
-# This is the main configuration file for Netlify.
-
-# Build settings
+# Main build settings for Netlify
 [build]
-  # The folder containing your serverless functions
-  functions = "quiz-backend/"
-  # The folder to publish for your static site
+  # The folder to publish for your static site (where quiz.html is)
   publish = "."
+  # The folder where your serverless function is located
+  functions = "quiz-backend/"
 
-# Redirects and rewrites rules
+# API rewrite rule
+# This sends all requests from /api/... to your server.js function
 [[redirects]]
-  # This rule makes your API available at /api/
   from = "/api/*"
   to = "/.netlify/functions/server/:splat"
+  status = 200
+
+# Main page rewrite rule (Single Page App rule)
+# This serves quiz.html for any path that is not an API call
+[[redirects]]
+  from = "/*"
+  to = "/quiz.html"
   status = 200
